@@ -107,7 +107,9 @@ def get_url_by_key(key: str):
 ################
 app = FastAPI()
 init_db()
+from fastapi.staticfiles import StaticFiles
 
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 class URLRequest(BaseModel):
     url: str
@@ -150,6 +152,7 @@ def shorten(request: Request, url: str = Form(...)):
             {
                 "request": request,
                 "short_url": short_url,
+                "short_code": key,
                 "original_url": record.original_url,
                 "admin_key": admin_key
             }

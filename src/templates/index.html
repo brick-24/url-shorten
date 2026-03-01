@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>URL Shortener</title>
+    <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
     <h1>URL Shortener</h1>
@@ -11,16 +12,17 @@
     </form>
 
     {% if short_url %}
-    <hr />
-    <h3>Short URL Created</h3>
-    <p>Original: {{ original_url }}</p>
-    <p>
-      Short:
-      <a href="{{ short_url }}" target="_blank"> {{ short_url }} </a>
-    </p>
-    <p>Admin Key: {{ admin_key }}</p>
+    <div class="card">
+      <h3>Short URL Created</h3>
+      <p>Original: {{ original_url }}</p>
+      <p>
+        Short:
+        <a href="{{ short_url }}" target="_blank">{{ short_url }}</a>
+      </p>
+      <p>Short Code: {{ short_code }}</p>
+      <p>Admin Key: {{ admin_key }}</p>
+    </div>
     {% endif %}
-
     <hr />
 
     <h2>View Admin Stats</h2>
@@ -31,24 +33,25 @@
       <button type="submit">View Stats</button>
     </form>
     {% if stats %}
-    <hr />
-    <h3>Stats for {{ stats_url }}</h3>
+    <div class="card">
+      <h3>Stats for {{ stats_url }}</h3>
 
-    <p>Original URL: {{ original_url }}</p>
-    <p>Total Clicks: {{ stats.total }}</p>
-    <p>Unique Visitors: {{ stats.unique_ips }}</p>
-    <p>First Seen: {{ stats.first_seen }}</p>
-    <p>Last Seen: {{ stats.last_seen }}</p>
+      <p>Original URL: {{ original_url }}</p>
+      <p>Total Clicks: {{ stats.total }}</p>
+      <p>Unique Visitors: {{ stats.unique_ips }}</p>
+      <p>First Seen: {{ stats.first_seen }}</p>
+      <p>Last Seen: {{ stats.last_seen }}</p>
 
-    <h4>Click Logs</h4>
-    <ul>
-      {% for log in logs %}
-      <li>
-        {{ log.timestamp }} | {{ log.ip_address }} | {{ log.user_agent }} | {{
-        log.referer }}
-      </li>
-      {% endfor %}
-    </ul>
+      <h4>Click Logs</h4>
+      <ul>
+        {% for log in logs %}
+        <li>
+          {{ log.timestamp }} | {{ log.ip_address }} | {{ log.user_agent }} | {{
+          log.referer }}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
     {% endif %}
   </body>
 </html>
