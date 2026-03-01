@@ -1,0 +1,5 @@
+.venv
+.env
+src/dev_db
+src/__pycache__
+notes.md
