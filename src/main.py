@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, HTTPException, Request, Form
+from fastapi.responses import RedirectResponse, HTMLResponse
 from pydantic import BaseModel
 
 import random
@@ -9,6 +9,10 @@ from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base
 
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+
+templates = Jinja2Templates(directory="src/templates")
 
 DATABASE_URL = "sqlite:///./src/dev_db/shortener.db"
 
@@ -108,6 +112,12 @@ init_db()
 class URLRequest(BaseModel):
     url: str
 
+@app.get("/", response_class=HTMLResponse)
+def homepage(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request}
+    )
 
 @app.get("/health")
 def home():
@@ -117,15 +127,15 @@ def home():
 length = 5
 
 
-@app.post("/shorten")
-def shorten(data: URLRequest):
+@app.post("/shorten", response_class=HTMLResponse)
+def shorten(request: Request, url: str = Form(...)):
     db = SessionLocal()
     try:
         key = "".join(random.choices(string.ascii_letters + string.digits, k=length))
         admin_key = "".join(random.choices(string.ascii_letters + string.digits, k=length * 2))
 
         record = URLMap(
-            original_url=data.url,
+            original_url=url,
             short_code=key,
             admin_key=admin_key
         )
@@ -133,16 +143,20 @@ def shorten(data: URLRequest):
         db.commit()
         db.refresh(record)
 
-        return {
-            "short_url": f"http://localhost:8000/{key}",
-            "short_code": key,
-            "admin_key": admin_key,
-            "original_url": record.original_url,
-        }
+        short_url = f"http://localhost:8000/{key}"
+
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "short_url": short_url,
+                "original_url": record.original_url,
+                "admin_key": admin_key
+            }
+        )
 
     finally:
         db.close()
-
 
 @app.get("/{key}")
 def open_short_url(key: str, request: Request):
@@ -167,40 +181,38 @@ def open_short_url(key: str, request: Request):
     return RedirectResponse(url=record.original_url, status_code=307)
 
 
-@app.get("/admin/{short_code}/stats")
-def admin_stats(short_code: str, admin_key: str, include_ips: bool = False):
+@app.post("/admin-stats", response_class=HTMLResponse)
+def admin_stats_form(
+    request: Request,
+    short_code: str = Form(...),
+    admin_key: str = Form(...)
+):
     db = SessionLocal()
     try:
         record = db.query(URLMap).filter(URLMap.short_code == short_code).first()
-        if not record:
-            raise HTTPException(status_code=404, detail="Short URL not found")
-        if record.admin_key != admin_key:
-            raise HTTPException(status_code=403, detail="Forbidden")
+
+        if not record or record.admin_key != admin_key:
+            return templates.TemplateResponse(
+                "index.html",
+                {
+                    "request": request,
+                    "error": "Invalid short code or admin key"
+                }
+            )
 
         stats = get_click_stats(record.id)
         logs = get_click_logs(record.id)
 
-        ips = None
-        if include_ips:
-            ips = sorted(list({log.ip_address for log in logs}))
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "stats": stats,
+                "logs": logs,
+                "stats_url": short_code,
+                "original_url": record.original_url
+            }
+        )
 
-        return {
-            "short_code": short_code,
-            "original_url": record.original_url,
-            "total_clicks": stats.get("total"),
-            "unique_ips": stats.get("unique_ips"),
-            "first_seen": stats.get("first_seen"),
-            "last_seen": stats.get("last_seen"),
-            "ips": ips,
-            "logs": [
-                {
-                    "ip_address": log.ip_address,
-                    "timestamp": log.timestamp.isoformat(),
-                    "user_agent": log.user_agent,
-                    "referer": log.referer,
-                }
-                for log in logs
-            ],
-        }
     finally:
         db.close()

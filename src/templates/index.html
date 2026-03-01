@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <title>URL Shortener</title>
+  </head>
+  <body>
+    <h1>URL Shortener</h1>
+    <form action="/shorten" method="post">
+      <input type="text" name="url" placeholder="Enter URL" />
+      <button type="submit">Shorten</button>
+    </form>
+
+    {% if short_url %}
+    <hr />
+    <h3>Short URL Created</h3>
+    <p>Original: {{ original_url }}</p>
+    <p>
+      Short:
+      <a href="{{ short_url }}" target="_blank"> {{ short_url }} </a>
+    </p>
+    <p>Admin Key: {{ admin_key }}</p>
+    {% endif %}
+
+    <hr />
+
+    <h2>View Admin Stats</h2>
+
+    <form action="/admin-stats" method="post">
+      <input type="text" name="short_code" placeholder="Short Code" required />
+      <input type="text" name="admin_key" placeholder="Admin Key" required />
+      <button type="submit">View Stats</button>
+    </form>
+    {% if stats %}
+    <hr />
+    <h3>Stats for {{ stats_url }}</h3>
+
+    <p>Original URL: {{ original_url }}</p>
+    <p>Total Clicks: {{ stats.total }}</p>
+    <p>Unique Visitors: {{ stats.unique_ips }}</p>
+    <p>First Seen: {{ stats.first_seen }}</p>
+    <p>Last Seen: {{ stats.last_seen }}</p>
+
+    <h4>Click Logs</h4>
+    <ul>
+      {% for log in logs %}
+      <li>
+        {{ log.timestamp }} | {{ log.ip_address }} | {{ log.user_agent }} | {{
+        log.referer }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </body>
+</html>
