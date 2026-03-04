@@ -1,0 +1,120 @@
+* {
+  box-sizing: border-box;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #fafafa;
+  color: #111;
+  line-height: 1.6;
+}
+
+.header {
+  background: transparent;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.header-inner {
+  max-width: 760px;
+  margin: auto;
+  padding: 20px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h2 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.login-btn {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #111;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.login-btn:hover {
+  background: #f3f3f3;
+}
+
+.container {
+  max-width: 760px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+h2 {
+  font-size: 22px;
+  margin-top: 40px;
+}
+
+.card {
+  background: white;
+  padding: 22px;
+  border-radius: 6px;
+  border: 1px solid #e5e5e5;
+  margin-top: 20px;
+}
+
+form {
+  background: white;
+  padding: 22px;
+  border-radius: 6px;
+  border: 1px solid #e5e5e5;
+  margin-top: 15px;
+}
+
+input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #999;
+}
+
+button {
+  background: #111;
+  border: none;
+  padding: 9px 16px;
+  color: white;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #333;
+}
+
+a {
+  color: #111;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+hr {
+  margin: 40px 0;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+}

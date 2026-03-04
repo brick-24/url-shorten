@@ -2,62 +2,82 @@
 <html>
   <head>
     <title>URL Shortener</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
   </head>
+
   <body>
-    {% if request.session.get("user") %} Logged in as {{
-    request.session.user.login }}
-    <a href="/logout">Logout</a>
-    {% else %}
-    <a href="/login">Login with GitHub</a>
-    {% endif %}
-    <h1>URL Shortener</h1>
-    <form action="/shorten" method="post">
-      <input type="text" name="url" placeholder="Enter URL" />
-      <button type="submit">Shorten</button>
-    </form>
+    <header class="header">
+      <div class="header-inner">
+        <h2>URL Shortener</h2>
 
-    {% if short_url %}
-    <div class="card">
-      <h3>Short URL Created</h3>
-      <p>Original: {{ original_url }}</p>
-      <p>
-        Short:
-        <a href="{{ short_url }}" target="_blank">{{ short_url }}</a>
-      </p>
-      <p>Short Code: {{ short_code }}</p>
-      <p>Admin Key: {{ admin_key }}</p>
+        {% if request.session.get("user") %}
+        <div class="user">
+          {{ request.session.user.login }}
+          <a href="/logout">Logout</a>
+        </div>
+        {% else %}
+        <a class="login-btn" href="/login">Login with GitHub</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="container">
+      <h1>Shorten a URL</h1>
+
+      <form action="/shorten" method="post">
+        <input type="text" name="url" placeholder="Enter URL" />
+        <button type="submit">Shorten</button>
+      </form>
+
+      {% if short_url %}
+      <div class="card">
+        <h3>Short URL Created</h3>
+        <p>Original: {{ original_url }}</p>
+        <p>
+          Short:
+          <a href="{{ short_url }}" target="_blank">{{ short_url }}</a>
+        </p>
+        <p>Short Code: {{ short_code }}</p>
+        <p>Admin Key: {{ admin_key }}</p>
+      </div>
+      {% endif %}
+
+      <hr />
+
+      <h2>View Admin Stats</h2>
+
+      <form action="/admin-stats" method="post">
+        <input
+          type="text"
+          name="short_code"
+          placeholder="Short Code"
+          required
+        />
+        <input type="text" name="admin_key" placeholder="Admin Key" required />
+        <button type="submit">View Stats</button>
+      </form>
+
+      {% if stats %}
+      <div class="card">
+        <h3>Stats for {{ stats_url }}</h3>
+
+        <p>Original URL: {{ original_url }}</p>
+        <p>Total Clicks: {{ stats.total }}</p>
+        <p>Unique Visitors: {{ stats.unique_ips }}</p>
+        <p>First Seen: {{ stats.first_seen }}</p>
+        <p>Last Seen: {{ stats.last_seen }}</p>
+
+        <h4>Click Logs</h4>
+        <ul>
+          {% for log in logs %}
+          <li>
+            {{ log.timestamp }} | {{ log.ip_address }} | {{ log.user_agent }} |
+            {{ log.referer }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
-    <hr />
-
-    <h2>View Admin Stats</h2>
-
-    <form action="/admin-stats" method="post">
-      <input type="text" name="short_code" placeholder="Short Code" required />
-      <input type="text" name="admin_key" placeholder="Admin Key" required />
-      <button type="submit">View Stats</button>
-    </form>
-    {% if stats %}
-    <div class="card">
-      <h3>Stats for {{ stats_url }}</h3>
-
-      <p>Original URL: {{ original_url }}</p>
-      <p>Total Clicks: {{ stats.total }}</p>
-      <p>Unique Visitors: {{ stats.unique_ips }}</p>
-      <p>First Seen: {{ stats.first_seen }}</p>
-      <p>Last Seen: {{ stats.last_seen }}</p>
-
-      <h4>Click Logs</h4>
-      <ul>
-        {% for log in logs %}
-        <li>
-          {{ log.timestamp }} | {{ log.ip_address }} | {{ log.user_agent }} | {{
-          log.referer }}
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endif %}
   </body>
 </html>

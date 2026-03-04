@@ -8,13 +8,12 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-
 from dotenv import load_dotenv
 import os
-
-load_dotenv()
-
 from authlib.integrations.starlette_client import OAuth
+from starlette.middleware.sessions import SessionMiddleware
+from pathlib import Path
+load_dotenv()
 
 oauth = OAuth()
 
@@ -46,7 +45,10 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 
-def get_db():
+def get_db(request: Request):
+    if "user" not in request.session:
+        raise HTTPException(status_code=401, detail="Login required")
+
     db = SessionLocal()
     try:
         yield db
@@ -54,7 +56,6 @@ def get_db():
         db.close()
 templates = Jinja2Templates(directory="src/templates")
 
-# tables
 class URLMap(Base):
     __tablename__ = "url_map"
 
@@ -72,13 +73,12 @@ class ClickLog(Base):
     ip_address = Column(String, nullable=False)
     user_agent = Column(String)
     referer = Column(String)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.utcnow())
 
 
 def init_db():
     Base.metadata.create_all(bind=engine)
 
-# db functions
 def log_click(db: Session, url_map_id: int, ip_address: str, user_agent: str, referer: str):
     click = ClickLog(
         url_map_id=url_map_id,
@@ -128,13 +128,15 @@ def get_url_by_key(db: Session, key: str):
 
 app = FastAPI()
 init_db()
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
-from starlette.middleware.sessions import SessionMiddleware
+
+BASE_DIR = Path(__file__).resolve().parent
+
+app.mount("/src/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
 
 class URLRequest(BaseModel):
     url: str
-
 
 @app.get("/", response_class=HTMLResponse)
 def homepage(request: Request):
@@ -148,11 +150,12 @@ def homepage(request: Request):
 def health():
     return {"status": "ok"}
 
+
 @app.get("/login")
 async def login(request: Request):
     redirect_uri = request.url_for("github_callback")
-    print(request.url_for("github_callback"))
     return await oauth.github.authorize_redirect(request, redirect_uri)
+
 
 @app.get("/auth/github/callback")
 async def github_callback(request: Request):
@@ -170,6 +173,7 @@ async def github_callback(request: Request):
 
     return RedirectResponse("/")
 
+
 @app.get("/logout")
 def logout(request: Request):
     request.session.clear()
@@ -178,8 +182,6 @@ def logout(request: Request):
 length = 5
 @app.post("/shorten", response_class=HTMLResponse)
 def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db)):
-    if "user" not in request.session:
-        return RedirectResponse("/login", status_code=303)
     key = "".join(random.choices(string.ascii_letters + string.digits, k=length))
     admin_key = "".join(random.choices(string.ascii_letters + string.digits, k=length * 2))
 
@@ -209,6 +211,7 @@ def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db
 
 @app.get("/{key}")
 def open_short_url(key: str, request: Request, db: Session = Depends(get_db)):
+
     record = get_url_by_key(db, key)
 
     if not record:
