@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 from pydantic import BaseModel
 import random
 import string
-from datetime import datetime
+from datetime import datetime, UTC
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from fastapi.templating import Jinja2Templates
@@ -85,8 +85,7 @@ def log_click(db: Session, url_map_id: int, ip_address: str, user_agent: str, re
         ip_address=ip_address,
         user_agent=user_agent,
         referer=referer,
-        timestamp=datetime.utcnow(),
-    )
+        timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))    )
 
     db.add(click)
     db.commit()
@@ -127,8 +126,14 @@ def get_url_by_key(db: Session, key: str):
     return db.query(URLMap).filter(URLMap.short_code == key).first()
 
 app = FastAPI()
-init_db()
 
+@app.on_event("startup")
+def startup():
+    try:
+        init_db()
+    except Exception as e:
+        print("Database init failed:", e)
+        
 BASE_DIR = Path(__file__).resolve().parent
 
 app.mount("/src/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
