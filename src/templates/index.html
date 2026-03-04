@@ -5,6 +5,12 @@
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
+    {% if request.session.get("user") %} Logged in as {{
+    request.session.user.login }}
+    <a href="/logout">Logout</a>
+    {% else %}
+    <a href="/login">Login with GitHub</a>
+    {% endif %}
     <h1>URL Shortener</h1>
     <form action="/shorten" method="post">
       <input type="text" name="url" placeholder="Enter URL" />

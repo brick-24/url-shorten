@@ -9,15 +9,24 @@ from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
+
+from authlib.integrations.starlette_client import OAuth
+
+oauth = OAuth()
+
+oauth.register(
+    name="github",
+    client_id=os.getenv("GITHUB_CLIENT_ID"),
+    client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
+    access_token_url="https://github.com/login/oauth/access_token",
+    authorize_url="https://github.com/login/oauth/authorize",
+    api_base_url="https://api.github.com/",
+    client_kwargs={"scope": "user:email"},
+)
 
 DB_HOST = os.getenv("DB_HOST")
 DB_USER = os.getenv("DB_USER")
@@ -120,7 +129,8 @@ def get_url_by_key(db: Session, key: str):
 app = FastAPI()
 init_db()
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
-
+from starlette.middleware.sessions import SessionMiddleware
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
 
 class URLRequest(BaseModel):
     url: str
@@ -138,10 +148,38 @@ def homepage(request: Request):
 def health():
     return {"status": "ok"}
 
+@app.get("/login")
+async def login(request: Request):
+    redirect_uri = request.url_for("github_callback")
+    print(request.url_for("github_callback"))
+    return await oauth.github.authorize_redirect(request, redirect_uri)
+
+@app.get("/auth/github/callback")
+async def github_callback(request: Request):
+
+    token = await oauth.github.authorize_access_token(request)
+
+    resp = await oauth.github.get("user", token=token)
+    profile = resp.json()
+
+    request.session["user"] = {
+        "id": profile["id"],
+        "login": profile["login"],
+        "avatar": profile["avatar_url"]
+    }
+
+    return RedirectResponse("/")
+
+@app.get("/logout")
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/")
+
 length = 5
 @app.post("/shorten", response_class=HTMLResponse)
 def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db)):
-
+    if "user" not in request.session:
+        return RedirectResponse("/login", status_code=303)
     key = "".join(random.choices(string.ascii_letters + string.digits, k=length))
     admin_key = "".join(random.choices(string.ascii_letters + string.digits, k=length * 2))
 
