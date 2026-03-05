@@ -136,8 +136,9 @@ def startup():
         
 BASE_DIR = Path(__file__).resolve().parent
 
-app.mount("/src/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+STATIC_DIR = BASE_DIR / "static"
 
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
 
 class URLRequest(BaseModel):
@@ -158,7 +159,7 @@ def health():
 
 @app.get("/login")
 async def login(request: Request):
-    redirect_uri = request.url_for("github_callback")
+    redirect_uri = str(request.url_for("github_callback")).replace("http://", "https://")
     return await oauth.github.authorize_redirect(request, redirect_uri)
 
 
