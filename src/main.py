@@ -32,8 +32,13 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 DB_PORT = os.getenv("DB_PORT")
+INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME")
 
-DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+if INSTANCE_CONNECTION_NAME:
+    DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?host=/cloudsql/{INSTANCE_CONNECTION_NAME}"
+else:
+    DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(
@@ -73,7 +78,7 @@ class ClickLog(Base):
     ip_address = Column(String, nullable=False)
     user_agent = Column(String)
     referer = Column(String)
-    timestamp = Column(DateTime, default=datetime.utcnow())
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
 
 def init_db():
@@ -84,8 +89,8 @@ def log_click(db: Session, url_map_id: int, ip_address: str, user_agent: str, re
         url_map_id=url_map_id,
         ip_address=ip_address,
         user_agent=user_agent,
-        referer=referer,
-        timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))    )
+        referer=referer
+    )
 
     db.add(click)
     db.commit()
@@ -133,7 +138,7 @@ def startup():
         init_db()
     except Exception as e:
         print("Database init failed:", e)
-        
+
 BASE_DIR = Path(__file__).resolve().parent
 
 STATIC_DIR = BASE_DIR / "static"
@@ -201,7 +206,7 @@ def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db
     db.commit()
     db.refresh(record)
 
-    short_url = f"http://localhost:8000/{key}"
+    short_url = f"https://short.raghavsethi.in/{key}"
 
     return templates.TemplateResponse(
         "index.html",
