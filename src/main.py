@@ -49,6 +49,12 @@ SessionLocal = sessionmaker(
 
 Base = declarative_base()
 
+def get_public_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 def get_db(request: Request):
     if "user" not in request.session:
@@ -245,7 +251,7 @@ def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db
 
 
 @app.get("/{key}")
-def open_short_url(key: str, request: Request, db: Session = Depends(get_db)):
+def open_short_url(key: str, request: Request, db: Session = Depends(get_public_db)):
 
     record = get_url_by_key(db, key)
 
