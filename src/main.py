@@ -49,6 +49,12 @@ SessionLocal = sessionmaker(
 
 Base = declarative_base()
 
+def get_public_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 def get_db(request: Request):
     if "user" not in request.session:
@@ -68,6 +74,8 @@ class URLMap(Base):
     original_url = Column(String, nullable=False)
     short_code = Column(String, unique=True, index=True, nullable=False)
     admin_key = Column(String, unique=True, index=True, nullable=False)
+    owner_id = Column(Integer, index=True, nullable=False)
+    owner_login = Column(String, index=True, nullable=False)
 
 
 class ClickLog(Base):
@@ -135,6 +143,11 @@ def require_login(request: Request):
         return False
     return True
 
+def get_user_links(db: Session, owner_id: int):
+    return db.query(URLMap).filter(
+        URLMap.owner_id == owner_id
+    ).all()
+
 app = FastAPI()
 
 @app.on_event("startup")
@@ -178,7 +191,7 @@ def health():
 
 @app.get("/login")
 async def login(request: Request):
-    redirect_uri = str(request.url_for("github_callback")).replace("http://", "http://")
+    redirect_uri = str(request.url_for("github_callback")).replace("http://", "https://")
     return await oauth.github.authorize_redirect(request, redirect_uri)
 
 
@@ -216,12 +229,14 @@ def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db
     key = "".join(random.choices(string.ascii_letters + string.digits, k=length))
     admin_key = "".join(random.choices(string.ascii_letters + string.digits, k=length * 2))
 
+    user = request.session["user"]
     record = URLMap(
         original_url=url,
         short_code=key,
-        admin_key=admin_key
+        admin_key=admin_key,
+        owner_id=user["id"],
+        owner_login=user["login"]
     )
-
     db.add(record)
     db.commit()
     db.refresh(record)
@@ -239,9 +254,30 @@ def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db
         }
     )
 
+@app.get("/my-links", response_class=HTMLResponse)
+def my_links(request: Request, db: Session = Depends(get_db)):
+
+    if "user" not in request.session:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request}
+        )
+
+    user = request.session["user"]
+
+    links = get_user_links(db, user["id"])
+
+    return templates.TemplateResponse(
+        "my_links.html",
+        {
+            "request": request,
+            "links": links,
+            "user": user
+        }
+    )
 
 @app.get("/{key}")
-def open_short_url(key: str, request: Request, db: Session = Depends(get_db)):
+def open_short_url(key: str, request: Request, db: Session = Depends(get_public_db)):
 
     record = get_url_by_key(db, key)
 
@@ -263,7 +299,6 @@ def open_short_url(key: str, request: Request, db: Session = Depends(get_db)):
         pass
 
     return RedirectResponse(url=record.original_url, status_code=307)
-
 
 @app.post("/admin-stats", response_class=HTMLResponse)
 def admin_stats_form(

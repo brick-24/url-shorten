@@ -118,3 +118,50 @@ hr {
   border: none;
   border-top: 1px solid #e5e5e5;
 }
+
+.links-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.links-table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 14px;
+  background: #fafafa;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.links-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.links-table tr:last-child td {
+  border-bottom: none;
+}
+
+.links-table tr:hover {
+  background: #fafafa;
+}
+
+.links-table a {
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.links-table a:hover {
+  text-decoration: underline;
+}
+
+.original {
+  word-break: break-all;
+  color: #555;
+}
