@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <title>My Links</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner">
+        <h2>Shortened URLs</h2>
+      </div>
+    </header>
+    <div class="container">
+      <table class="links-table">
+        <thead>
+          <tr>
+            <th>Short URL</th>
+            <th>Original URL</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for link in links %}
+          <tr>
+            <td>
+              <a href="/{{ link.short_code }}">{{ link.short_code }}</a>
+            </td>
+            <td class="original">{{ link.original_url }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <br />
+      <a href="/">Back to home</a>
+    </div>
+  </body>
+</html>

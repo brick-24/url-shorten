@@ -11,6 +11,7 @@
         <h2>URL Shortener</h2>
 
         {% if request.session.get("user") %}
+        <a href="/my-links">My Links</a>
         <div class="user">
           {{ request.session.user.login }}
           <a href="/logout">Logout</a>

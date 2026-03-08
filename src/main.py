@@ -143,6 +143,11 @@ def require_login(request: Request):
         return False
     return True
 
+def get_user_links(db: Session, owner_id: int):
+    return db.query(URLMap).filter(
+        URLMap.owner_id == owner_id
+    ).all()
+
 app = FastAPI()
 
 @app.on_event("startup")
@@ -249,6 +254,27 @@ def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db
         }
     )
 
+@app.get("/my-links", response_class=HTMLResponse)
+def my_links(request: Request, db: Session = Depends(get_db)):
+
+    if "user" not in request.session:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request}
+        )
+
+    user = request.session["user"]
+
+    links = get_user_links(db, user["id"])
+
+    return templates.TemplateResponse(
+        "my_links.html",
+        {
+            "request": request,
+            "links": links,
+            "user": user
+        }
+    )
 
 @app.get("/{key}")
 def open_short_url(key: str, request: Request, db: Session = Depends(get_public_db)):
@@ -273,7 +299,6 @@ def open_short_url(key: str, request: Request, db: Session = Depends(get_public_
         pass
 
     return RedirectResponse(url=record.original_url, status_code=307)
-
 
 @app.post("/admin-stats", response_class=HTMLResponse)
 def admin_stats_form(
