@@ -130,6 +130,11 @@ def get_click_stats(db: Session, url_map_id: int):
 def get_url_by_key(db: Session, key: str):
     return db.query(URLMap).filter(URLMap.short_code == key).first()
 
+def require_login(request: Request):
+    if "user" not in request.session:
+        return False
+    return True
+
 app = FastAPI()
 
 @app.on_event("startup")
@@ -151,11 +156,20 @@ class URLRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 def homepage(request: Request):
+
+    if not require_login(request):
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request}
+        )
+
     return templates.TemplateResponse(
         "index.html",
-        {"request": request}
+        {
+            "request": request,
+            "user": request.session.get("user")
+        }
     )
-
 
 @app.get("/health")
 def health():
@@ -164,7 +178,7 @@ def health():
 
 @app.get("/login")
 async def login(request: Request):
-    redirect_uri = str(request.url_for("github_callback")).replace("http://", "https://")
+    redirect_uri = str(request.url_for("github_callback")).replace("http://", "http://")
     return await oauth.github.authorize_redirect(request, redirect_uri)
 
 
@@ -193,6 +207,12 @@ def logout(request: Request):
 length = 5
 @app.post("/shorten", response_class=HTMLResponse)
 def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db)):
+    if not require_login(request):
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request}
+        )
+    
     key = "".join(random.choices(string.ascii_letters + string.digits, k=length))
     admin_key = "".join(random.choices(string.ascii_letters + string.digits, k=length * 2))
 
@@ -252,7 +272,12 @@ def admin_stats_form(
     admin_key: str = Form(...),
     db: Session = Depends(get_db)
 ):
-
+    if not require_login(request):
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request}
+        )
+    
     record = db.query(URLMap).filter(URLMap.short_code == short_code).first()
 
     if not record or record.admin_key != admin_key:
