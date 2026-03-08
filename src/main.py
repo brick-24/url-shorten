@@ -68,6 +68,8 @@ class URLMap(Base):
     original_url = Column(String, nullable=False)
     short_code = Column(String, unique=True, index=True, nullable=False)
     admin_key = Column(String, unique=True, index=True, nullable=False)
+    owner_id = Column(Integer, index=True, nullable=False)
+    owner_login = Column(String, index=True, nullable=False)
 
 
 class ClickLog(Base):
@@ -216,12 +218,14 @@ def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db
     key = "".join(random.choices(string.ascii_letters + string.digits, k=length))
     admin_key = "".join(random.choices(string.ascii_letters + string.digits, k=length * 2))
 
+    user = request.session["user"]
     record = URLMap(
         original_url=url,
         short_code=key,
-        admin_key=admin_key
+        admin_key=admin_key,
+        owner_id=user["id"],
+        owner_login=user["login"]
     )
-
     db.add(record)
     db.commit()
     db.refresh(record)
