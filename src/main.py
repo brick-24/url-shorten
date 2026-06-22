@@ -27,19 +27,27 @@ oauth.register(
     client_kwargs={"scope": "user:email"},
 )
 
-DB_HOST = os.getenv("DB_HOST")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_NAME = os.getenv("DB_NAME")
-DB_PORT = os.getenv("DB_PORT")
-INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME")
+# DB_HOST = os.getenv("DB_HOST")
+# DB_USER = os.getenv("DB_USER")
+# DB_PASSWORD = os.getenv("DB_PASSWORD")
+# DB_NAME = os.getenv("DB_NAME")
+# DB_PORT = os.getenv("DB_PORT")
+# INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME")
 
-if INSTANCE_CONNECTION_NAME:
-    DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?host=/cloudsql/{INSTANCE_CONNECTION_NAME}"
-else:
-    DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# if INSTANCE_CONNECTION_NAME:
+#     DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?host=/cloudsql/{INSTANCE_CONNECTION_NAME}"
+# else:
+#     DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-engine = create_engine(DATABASE_URL)
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL not set in environment")
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True
+)
 
 SessionLocal = sessionmaker(
     bind=engine,
