@@ -230,7 +230,7 @@ def health():
 
 @app.get("/login")
 async def login(request: Request):
-    redirect_uri = str(request.url_for("github_callback")).replace("http://", "http://")
+    redirect_uri = str(request.url_for("github_callback")).replace("http://", "https://")
     return await oauth.github.authorize_redirect(request, redirect_uri)
 
 
