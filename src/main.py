@@ -1,6 +1,11 @@
 from fastapi import FastAPI, HTTPException, Request, Form, Depends
 from fastapi.responses import RedirectResponse, HTMLResponse
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi import _rate_limit_exceeded_handler
 import random
 import string
 from datetime import datetime, UTC
@@ -158,6 +163,32 @@ def get_user_links(db: Session, owner_id: int):
 
 app = FastAPI()
 
+limiter = Limiter(key_func=get_remote_address)
+
+app.state.limiter = limiter
+from slowapi.errors import RateLimitExceeded
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+
+    messages = {
+        "/shorten": "You can create at most 20 URLs per hour.",
+        "/admin-stats": "You can view stats at most 60 times per hour."
+    }
+
+    return templates.TemplateResponse(
+        "rate_limit.html",
+        {
+            "request": request,
+            "message": messages.get(
+                request.url.path,
+                "Too many requests."
+            )
+        },
+        status_code=429
+    )
+app.add_middleware(SlowAPIMiddleware)
+
 @app.on_event("startup")
 def startup():
     try:
@@ -227,13 +258,8 @@ def logout(request: Request):
 
 length = 5
 @app.post("/shorten", response_class=HTMLResponse)
+@limiter.limit("20/hour")
 def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db)):
-    if not require_login(request):
-        return templates.TemplateResponse(
-            "login.html",
-            {"request": request}
-        )
-    
     key = "".join(random.choices(string.ascii_letters + string.digits, k=length))
     admin_key = "".join(random.choices(string.ascii_letters + string.digits, k=length * 2))
 
@@ -309,6 +335,7 @@ def open_short_url(key: str, request: Request, db: Session = Depends(get_public_
     return RedirectResponse(url=record.original_url, status_code=307)
 
 @app.post("/admin-stats", response_class=HTMLResponse)
+@limiter.limit("60/hour")
 def admin_stats_form(
     request: Request,
     short_code: str = Form(...),

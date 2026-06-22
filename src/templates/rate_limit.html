@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Rate Limited</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="header-inner">
+        <h2>URL Shortener</h2>
+
+        {% if request.session.get("user") %}
+        <a href="/my-links">My Links</a>
+        <div class="user">
+          {{ request.session.user.login }}
+          <a href="/logout">Logout</a>
+        </div>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="rate-limit-card">
+        <h1>Too Many Requests</h1>
+
+        <p>{{ message }}</p>
+
+        <a href="/" class="btn">Return Home</a>
+      </div>
+    </div>
+  </body>
+</html>
