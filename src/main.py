@@ -166,10 +166,27 @@ app = FastAPI()
 limiter = Limiter(key_func=get_remote_address)
 
 app.state.limiter = limiter
-app.add_exception_handler(
-    RateLimitExceeded,
-    _rate_limit_exceeded_handler
-)
+from slowapi.errors import RateLimitExceeded
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+
+    messages = {
+        "/shorten": "You can create at most 20 URLs per hour.",
+        "/admin-stats": "You can view stats at most 60 times per hour."
+    }
+
+    return templates.TemplateResponse(
+        "rate_limit.html",
+        {
+            "request": request,
+            "message": messages.get(
+                request.url.path,
+                "Too many requests."
+            )
+        },
+        status_code=429
+    )
 app.add_middleware(SlowAPIMiddleware)
 
 @app.on_event("startup")
