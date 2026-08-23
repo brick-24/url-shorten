@@ -16,5 +16,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_CALLBACK_URL = "https://short.raghavsethi.in/auth/google/callback"
+
 SHORT_CODE_LENGTH = 5
 PUBLIC_SHORT_URL_BASE = os.getenv("PUBLIC_SHORT_URL_BASE", "https://short.raghavsethi.in")

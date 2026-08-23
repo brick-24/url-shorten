@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from .auth import oauth, require_login
-from .config import PUBLIC_SHORT_URL_BASE
+from .config import GOOGLE_CALLBACK_URL, PUBLIC_SHORT_URL_BASE
 from .database import get_db, get_public_db
 from .links import (
     create_url_map,
@@ -54,9 +54,34 @@ async def github_callback(request: Request):
     profile = resp.json()
 
     request.session["user"] = {
-        "id": profile["id"],
+        "id": str(profile["id"]),
         "login": profile["login"],
         "avatar": profile["avatar_url"],
+        "provider": "github",
+    }
+
+    return RedirectResponse("/")
+
+
+@router.get("/login/google")
+async def google_login(request: Request):
+    return await oauth.google.authorize_redirect(request, GOOGLE_CALLBACK_URL)
+
+
+@router.get("/auth/google/callback")
+async def google_callback(request: Request):
+    token = await oauth.google.authorize_access_token(request)
+    profile = token.get("userinfo")
+
+    if profile is None:
+        resp = await oauth.google.get("userinfo", token=token)
+        profile = resp.json()
+
+    request.session["user"] = {
+        "id": f"google:{profile['sub']}",
+        "login": profile.get("email"),
+        "avatar": profile.get("picture"),
+        "provider": "google",
     }
 
     return RedirectResponse("/")
