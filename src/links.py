@@ -79,5 +79,5 @@ def get_url_by_key(db: Session, key: str):
     return db.query(URLMap).filter(URLMap.short_code == key).first()
 
 
-def get_user_links(db: Session, owner_id: int):
+def get_user_links(db: Session, owner_id: str):
     return db.query(URLMap).filter(URLMap.owner_id == owner_id).all()

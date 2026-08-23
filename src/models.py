@@ -12,7 +12,7 @@ class URLMap(Base):
     original_url = Column(String, nullable=False)
     short_code = Column(String, unique=True, index=True, nullable=False)
     admin_key = Column(String, unique=True, index=True, nullable=False)
-    owner_id = Column(Integer, index=True, nullable=False)
+    owner_id = Column(String, index=True, nullable=False)
     owner_login = Column(String, index=True, nullable=False)
 
 
