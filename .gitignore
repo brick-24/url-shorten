@@ -3,3 +3,5 @@
 src/dev_db
 src/__pycache__
 notes.md
+
+.env.production

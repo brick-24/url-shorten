@@ -1,0 +1,7 @@
+.env
+notes.md
+.env.*
+.git
+.gitignore
+__pycache__
+.env.production
