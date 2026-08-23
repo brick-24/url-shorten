@@ -5,3 +5,4 @@ notes.md
 .gitignore
 __pycache__
 .env.production
+.env.production.yaml
