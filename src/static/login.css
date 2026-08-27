@@ -1,0 +1,167 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+
+  color: #111;
+  background: #fff;
+}
+
+.login-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  padding: 20px 30px;
+}
+
+.login-logo {
+  color: #111;
+  text-decoration: none;
+
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.login-logo:hover {
+  text-decoration: none;
+}
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 135px 20px 60px;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 442px;
+}
+
+.login-box h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.7px;
+}
+
+.login-description {
+  margin: 12px 0 30px;
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+}
+
+.social-login {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-button {
+  width: 100%;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  border: 1px solid #dedede;
+  border-radius: 11px;
+  background: #fff;
+  color: #111;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 500;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+.social-button:hover {
+  background: #fafafa;
+  border-color: #cfcfcf;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.social-button:active {
+  transform: translateY(1px);
+}
+
+.social-icon {
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 700;
+}
+
+.github-icon {
+  font-size: 19px;
+}
+
+.google-icon {
+  font-size: 18px;
+}
+
+@media (max-width: 600px) {
+  .login-header {
+    padding: 18px 20px;
+  }
+
+  .login-container {
+    padding: 110px 20px 40px;
+  }
+
+  .login-box h1 {
+    font-size: 27px;
+  }
+}
+
+.social-button img {
+  width: 40px;
+  height: 40px;
+}
+
+.site-credit {
+  position: fixed;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+
+  margin: 0;
+
+  text-align: center;
+
+  font-size: 13px;
+}
+
+.site-credit a {
+  color: #999;
+  text-decoration: none;
+}
+
+.site-credit a:hover {
+  color: #111;
+  text-decoration: underline;
+}
