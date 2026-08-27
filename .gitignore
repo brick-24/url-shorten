@@ -5,3 +5,4 @@ src/__pycache__
 notes.md
 .env.production
 .env.production.yaml
+future_changes.md

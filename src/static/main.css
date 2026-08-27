@@ -1,0 +1,24 @@
+:root {
+  /* Theme */
+  --paper: #f7f6f3;
+  --grid: #e3e2de;
+  --ink: #1a1a1a;
+
+  /* Accents */
+  --pink: #e8457b;
+  --yellow: #f2c438;
+
+  /* Neutrals */
+  --muted: #555;
+  --muted-light: #777;
+  --muted-lightest: #999;
+  --border: #d5d4d0;
+  --dark-border: #333;
+  --white: #fff;
+  --background: #fff;
+  --hover: #fafafa;
+
+  /* Typography */
+  --serif: "Merriweather", Georgia, serif;
+  --body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
