@@ -12,6 +12,7 @@ from .links import (
     get_url_by_key,
     get_user_links,
     log_click,
+    get_click_counts,
 )
 from .models import URLMap
 from .rate_limiting import limiter
@@ -112,12 +113,25 @@ def shorten(request: Request, url: str = Form(...), db: Session = Depends(get_db
 
 
 @router.get("/my-links", response_class=HTMLResponse)
-def my_links(request: Request, db: Session = Depends(get_db)):
+def my_links(
+    request: Request,
+    db: Session = Depends(get_db),
+):
     if "user" not in request.session:
-        return templates.TemplateResponse("login.html", {"request": request})
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request},
+        )
 
     user = request.session["user"]
+
     links = get_user_links(db, user["id"])
+    click_counts = get_click_counts(db, user["id"])
+
+    click_count_map = {
+        url_map_id: count
+        for url_map_id, count in click_counts
+    }
 
     return templates.TemplateResponse(
         "my_links.html",
@@ -125,6 +139,7 @@ def my_links(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "links": links,
             "user": user,
+            "click_count_map": click_count_map,
         },
     )
 

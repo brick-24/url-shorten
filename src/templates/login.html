@@ -1,28 +1,46 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Login Required</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Sign in - URL Shortener</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', path='login.css') }}" />
   </head>
-  <body>
-    <header class="header">
-      <div class="header-inner">
-        <h2>URL Shortener</h2>
+
+  <body class="login-page">
+    <!-- <header class="login-header">
+      <a href="/" class="login-logo"> URL Shortener </a>
+    </header> -->
+
+    <main class="login-container">
+      <div class="login-box">
+        <h1>Sign in to URL Shortener</h1>
+
+        <p class="login-description">Choose an account to continue.</p>
+
+        <div class="social-login">
+          <a href="/login" class="social-button">
+            <img src="{{ url_for('static', path='git.svg') }}" alt="GitHub" />
+            <span>Continue with GitHub</span>
+          </a>
+
+          <a href="/login/google" class="social-button">
+            <img src="{{ url_for('static', path='goog.svg') }}" alt="Google" />
+            <span>Continue with Google</span>
+          </a>
+        </div>
       </div>
-    </header>
-
-    <div class="container">
-      <h2>You must login to use the URL shortener</h2>
-
-      <p>This service requires authentication.</p>
-
-      <a href="/login">
-        <button>Login with GitHub</button>
-      </a>
-
-      <a href="/login/google">
-        <button>Login with Google</button>
-      </a>
-    </div>
+      <p class="site-credit">
+        <a
+          href="https://raghavsethi.in"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          raghavsethi.in
+        </a>
+      </p>
+    </main>
   </body>
 </html>

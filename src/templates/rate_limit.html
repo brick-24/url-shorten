@@ -1,33 +1,58 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Rate Limited</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Rate Limited - URL Shortener</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='rate-limit.css') }}"
+    />
   </head>
 
-  <body>
+  <body class="rate-limit-page">
     <header class="header">
       <div class="header-inner">
-        <h2>URL Shortener</h2>
+        <a href="/" class="brand">URL Shortener</a>
 
         {% if request.session.get("user") %}
-        <a href="/my-links">My Links</a>
-        <div class="user">
-          {{ request.session.user.login }}
-          <a href="/logout">Logout</a>
-        </div>
+        <nav class="nav">
+          <a href="/my-links" class="nav-link">My Links</a>
+
+          <div class="user-menu">
+            <span class="username"> {{ request.session.user.login }} </span>
+
+            <a href="/logout" class="nav-link">Logout</a>
+          </div>
+        </nav>
         {% endif %}
       </div>
     </header>
 
-    <div class="container">
-      <div class="rate-limit-card">
+    <main class="page">
+      <section class="rate-limit-card">
+        <div class="section-label">RATE LIMITED</div>
+
+        <div class="rate-icon">!</div>
+
         <h1>Too Many Requests</h1>
 
         <p>{{ message }}</p>
 
-        <a href="/" class="btn">Return Home</a>
-      </div>
-    </div>
+        <a href="/" class="return-button">Return Home</a>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <a
+        href="https://raghavsethi.in"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        raghavsethi.in
+      </a>
+    </footer>
   </body>
 </html>

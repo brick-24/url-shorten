@@ -1,85 +1,239 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>URL Shortener</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script src="{{ url_for('static', path='qr.js') }}" defer></script>
   </head>
 
   <body>
     <header class="header">
       <div class="header-inner">
-        <h2>URL Shortener</h2>
+        <a href="/" class="brand"> URL Shortener </a>
 
-        {% if request.session.get("user") %}
-        <a href="/my-links">My Links</a>
-        <div class="user">
-          {{ request.session.user.login }}
-          <a href="/logout">Logout</a>
-        </div>
-        {% else %}
-        <a class="login-btn" href="/login">Login with GitHub</a>
-        <a class="login-btn" href="/login/google">Login with Google</a>
-        {% endif %}
+        <nav class="nav">
+          {% if request.session.get("user") %}
+
+          <a href="/my-links" class="nav-link"> My Links </a>
+
+          <div class="user-menu">
+            <span class="username"> {{ request.session.user.login }} </span>
+
+            <a href="/logout" class="logout-link"> Logout </a>
+          </div>
+
+          {% else %}
+
+          <a href="/login" class="nav-link"> Login with GitHub </a>
+
+          <a href="/login/google" class="nav-link"> Login with Google </a>
+
+          {% endif %}
+        </nav>
       </div>
     </header>
 
-    <div class="container">
-      <h1>Shorten a URL</h1>
+    <main class="page">
+      <section class="shortener-card">
+        <div class="badge">URL SHORTENER</div>
 
-      <form action="/shorten" method="post">
-        <input type="text" name="url" placeholder="Enter URL" />
-        <button type="submit">Shorten</button>
-      </form>
+        <h1>
+          Turn long links into
+          <em>short ones.</em>
+        </h1>
+
+        <p class="intro">Create a simple, shareable URL in seconds.</p>
+
+        <form action="/shorten" method="post" class="shorten-form">
+          <input
+            type="url"
+            name="url"
+            placeholder="Paste your long URL here..."
+            autocomplete="off"
+            required
+          />
+
+          <button type="submit">Shorten URL</button>
+        </form>
+      </section>
+
+      <!-- =========================
+           Created URL
+           ========================= -->
 
       {% if short_url %}
-      <div class="card">
-        <h3>Short URL Created</h3>
-        <p>Original: {{ original_url }}</p>
-        <p>
-          Short:
-          <a href="{{ short_url }}" target="_blank">{{ short_url }}</a>
-        </p>
-        <p>Short Code: {{ short_code }}</p>
-        <p>Admin Key: {{ admin_key }}</p>
-      </div>
+
+      <section class="result-card">
+        <div class="section-label">LINK CREATED</div>
+
+        <h2>Your short link is ready</h2>
+
+        <div class="short-url-box">
+          <a href="{{ short_url }}" target="_blank" rel="noopener noreferrer">
+            {{ short_url }}
+          </a>
+
+          <a
+            href="{{ short_url }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="open-link"
+          >
+            Open
+          </a>
+        </div>
+
+        <div class="details-with-qr">
+          <div class="details">
+            <div class="detail">
+              <span>Original URL</span>
+              <strong class="original">{{ original_url }}</strong>
+            </div>
+
+            <div class="detail">
+              <span>Short Code</span>
+              <strong>{{ short_code }}</strong>
+            </div>
+
+            <div class="detail">
+              <span>Admin Key</span>
+              <strong class="admin-key">{{ admin_key }}</strong>
+            </div>
+          </div>
+
+          <div class="qr-code">
+            <div id="qr-code" data-url="{{ short_url }}"></div>
+            <span>SCAN TO OPEN</span>
+          </div>
+        </div>
+
+        <div class="callout">
+          <div>
+            <span class="callout-title">KEEP YOUR ADMIN KEY SAFE</span>
+            <p>You'll need it to view statistics for this link.</p>
+          </div>
+        </div>
+      </section>
       {% endif %}
 
-      <hr />
+      <section class="stats-section">
+        <div class="section-title">
+          <span class="badge"> ANALYTICS </span>
 
-      <h2>View Admin Stats</h2>
+          <h2>
+            See how your link
+            <em>performs.</em>
+          </h2>
 
-      <form action="/admin-stats" method="post">
-        <input
-          type="text"
-          name="short_code"
-          placeholder="Short Code"
-          required
-        />
-        <input type="text" name="admin_key" placeholder="Admin Key" required />
-        <button type="submit">View Stats</button>
-      </form>
+          <p>Use your short code and admin key to view its statistics.</p>
+        </div>
 
+        <form action="/admin-stats" method="post" class="stats-form">
+          <div class="field">
+            <label for="short_code"> Short Code </label>
+
+            <input
+              id="short_code"
+              type="text"
+              name="short_code"
+              placeholder="e.g. aB3xYz"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="admin_key"> Admin Key </label>
+
+            <input
+              id="admin_key"
+              type="text"
+              name="admin_key"
+              placeholder="Your admin key"
+              required
+            />
+          </div>
+
+          <button type="submit">View Stats</button>
+        </form>
+      </section>
       {% if stats %}
-      <div class="card">
-        <h3>Stats for {{ stats_url }}</h3>
 
-        <p>Original URL: {{ original_url }}</p>
-        <p>Total Clicks: {{ stats.total }}</p>
-        <p>Unique Visitors: {{ stats.unique_ips }}</p>
-        <p>First Seen: {{ stats.first_seen }}</p>
-        <p>Last Seen: {{ stats.last_seen }}</p>
+      <section class="stats-card">
+        <div class="section-label">LINK ANALYTICS</div>
 
-        <h4>Click Logs</h4>
-        <ul>
-          {% for log in logs %}
-          <li>
-            {{ log.timestamp }} | {{ log.ip_address }} | {{ log.user_agent }} |
-            {{ log.referer }}
-          </li>
-          {% endfor %}
-        </ul>
-      </div>
+        <h2>{{ stats_url }}</h2>
+
+        <div class="stats-grid">
+          <div class="stat">
+            <span>Total Clicks</span>
+            <strong>{{ stats.total }}</strong>
+          </div>
+
+          <div class="stat">
+            <span>Unique Visitors</span>
+            <strong>{{ stats.unique_ips }}</strong>
+          </div>
+
+          <div class="stat">
+            <span>First Seen</span>
+            <strong>{{ stats.first_seen }}</strong>
+          </div>
+
+          <div class="stat">
+            <span>Last Seen</span>
+            <strong>{{ stats.last_seen }}</strong>
+          </div>
+        </div>
+
+        <div class="logs">
+          <h3>Click Logs</h3>
+
+          {% if logs %} {% for log in logs %}
+
+          <div class="log">
+            <div class="log-primary">
+              <span>{{ log.timestamp }}</span>
+              <span>{{ log.ip_address }}</span>
+            </div>
+
+            <div class="log-secondary">
+              <span>{{ log.user_agent }}</span>
+              <span>{{ log.referer }}</span>
+            </div>
+          </div>
+
+          {% endfor %} {% else %}
+
+          <p class="empty">No clicks have been recorded yet.</p>
+
+          {% endif %}
+        </div>
+      </section>
+
       {% endif %}
-    </div>
+    </main>
+
+    <footer class="footer">
+      <a
+        href="https://raghavsethi.in"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        raghavsethi.in
+      </a>
+    </footer>
   </body>
 </html>

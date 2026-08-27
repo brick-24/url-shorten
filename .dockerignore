@@ -6,3 +6,4 @@ notes.md
 __pycache__
 .env.production
 .env.production.yaml
+future_changes.md
