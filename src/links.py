@@ -3,6 +3,7 @@ import string
 
 from sqlalchemy.orm import Session
 
+from sqlalchemy import func
 from .config import SHORT_CODE_LENGTH
 from .models import ClickLog, URLMap
 
@@ -81,3 +82,18 @@ def get_url_by_key(db: Session, key: str):
 
 def get_user_links(db: Session, owner_id: str):
     return db.query(URLMap).filter(URLMap.owner_id == owner_id).all()
+
+def get_click_counts(db: Session, owner_id: str):
+    return (
+        db.query(
+            URLMap.id,
+            func.count(ClickLog.id).label("click_count"),
+        )
+        .outerjoin(
+            ClickLog,
+            ClickLog.url_map_id == URLMap.id,
+        )
+        .filter(URLMap.owner_id == owner_id)
+        .group_by(URLMap.id)
+        .all()
+    )

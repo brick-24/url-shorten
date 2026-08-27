@@ -1,38 +1,101 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>My Links</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>My Links - URL Shortener</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,700;1,700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='my-links.css') }}"
+    />
   </head>
-  <body>
+
+  <body class="my-links-page">
     <header class="header">
       <div class="header-inner">
-        <h2>Shortened URLs</h2>
+        <a href="/" class="brand"> URL Shortener </a>
+
+        <nav class="nav">
+          <a href="/logout" class="nav-link"> Logout </a>
+        </nav>
       </div>
     </header>
-    <div class="container">
-      <table class="links-table">
-        <thead>
-          <tr>
-            <th>Short URL</th>
-            <th>Original URL</th>
-          </tr>
-        </thead>
 
-        <tbody>
-          {% for link in links %}
-          <tr>
-            <td>
-              <a href="/{{ link.short_code }}">{{ link.short_code }}</a>
-            </td>
-            <td class="original">{{ link.original_url }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <main class="page">
+      <section class="links-card">
+        <div class="badge">YOUR LINKS</div>
 
-      <br />
-      <a href="/">Back to home</a>
-    </div>
+        <h1>
+          Your shortened
+          <em>URLs.</em>
+        </h1>
+
+        <p class="intro">All the links you've created with URL Shortener.</p>
+
+        {% if links %}
+
+        <div class="table-wrapper">
+          <table class="links-table">
+            <thead>
+              <tr>
+                <th>Short URL</th>
+                <th>Original URL</th>
+                <th>Views</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for link in links %}
+              <tr>
+                <td>
+                  <a href="/{{ link.short_code }}" class="short-link">
+                    {{ link.short_code }}
+                    <span>↗</span>
+                  </a>
+                </td>
+
+                <td class="original">{{ link.original_url }}</td>
+
+                <td class="clicks">{{ click_count_map.get(link.id, 0) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+          <div class="empty-icon">→</div>
+
+          <h2>No links yet</h2>
+
+          <p>You haven't created any shortened URLs yet.</p>
+
+          <a href="/" class="create-link"> Create your first link → </a>
+        </div>
+
+        {% endif %}
+      </section>
+    </main>
+
+    <footer class="footer">
+      <a
+        href="https://raghavsethi.in"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        raghavsethi.in
+      </a>
+    </footer>
   </body>
 </html>
